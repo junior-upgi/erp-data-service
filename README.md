@@ -23,7 +23,7 @@ npm run start:dev:server
 GET http://upgi.ddns.net:9008/erpDataService/serviceStatus 可確認伺服器是否上線
 
 POST http://upgi.ddns.net:9008/erpDataService/getToken
-    headers Content-Type: application/json
+    headers { "Content-Type": "application/json" }
     raw Body
     {
         "loginId": xxxxxx,  // AUTHORIZED_USER
@@ -37,7 +37,7 @@ POST http://upgi.ddns.net:9008/erpDataService/getToken
     }
 
 GET http://upgi.ddns.net:9008/erpDataService/CUST (get an array of ERP clients registered with active sales staff)
-    headers {x-access-token: { jwt token string} }
+    headers { "x-access-token": { jwt token string } }
     return type
     {
         "success": true/false
@@ -46,7 +46,7 @@ GET http://upgi.ddns.net:9008/erpDataService/CUST (get an array of ERP clients r
     }
 
 GET http://upgi.ddns.net:9008/erpDataService/CUST (get an array of ERP clients registered with active sales staff)
-    headers {x-access-token: { jwt token string} }
+    headers { "x-access-token": { jwt token string } }
     return type
     {
         "success": true/false
@@ -54,12 +54,12 @@ GET http://upgi.ddns.net:9008/erpDataService/CUST (get an array of ERP clients r
             "CUS_NO":"string", // 客戶編號
             "SNM":"string",    // 客戶簡稱
             "SAL":"string"     // 員工編號(業務人員)
-        }] / null
+        },{...},{...},...] / null
         "message": null / {error message string}
     }
 
-GET http://upgi.ddns.net:9008/erpDataService/SALM/{員工編號=SAL_NO} (get staff info by id)
-    headers {x-access-token: { jwt token string} }
+GET http://upgi.ddns.net:9008/erpDataService/SALM/{員工編號=SAL_NO} (get staff info by SAL_NO)
+    headers { "x-access-token": { jwt token string } }
     return type
     {
         "success": true/false
@@ -72,7 +72,26 @@ GET http://upgi.ddns.net:9008/erpDataService/SALM/{員工編號=SAL_NO} (get sta
         "message": null / {error message string}
     }
 
-GET http://upgi.ddns.net:9008/erpDataService/SALM (員工資料列表，尚未開放，需先確認如何取得"註冊使用者"列表，才能正確篩選出人員)
+GET http://upgi.ddns.net:9008/erpDataService/SALM (get staff list against a list of SAL_NO)
+    headers {
+        "x-access-token": { jwt token string },
+        "Content-Type": "application/json"
+    }
+    raw Body
+    {
+        "personnelList": "['xxx','xxx','xxx',....]" // 員工編號
+    }
+    return type
+    {
+        "success": true/false
+        "data": [{
+            "SAL_NO": "string",  // 員工編號
+            "NAME": "string",    // 姓名
+            "DEP": "string",     // 單位編號
+            "DEP_NAME": "string" // 單位簡稱
+        },{...},{...},...] / null
+        "message": null / {error message string}
+    }
 
 # 注意事項
 1. database host and database info is hardcoded into the program

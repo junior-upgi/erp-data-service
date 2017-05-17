@@ -21,11 +21,13 @@ const mssql_config = {
 };
 
 const app = express(); // init express.js framework
-app.use(bodyParser.urlencoded({ extended: true })); // parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({
+    extended: true
+})); // parse application/x-www-form-urlencoded
 app.use(bodyParser.json()); // use json body parser middleware
-const main = express.Router();  // initiate express router
+const main = express.Router(); // initiate express router
 app.use(`/${systemReference}`, main); // adds 'erpDataService' to all routes
-main.use(cors());   // allowing cross origin request
+main.use(cors()); // allowing cross origin request
 
 // static file route
 // main.use('/', express.static(path.join(__dirname, '/../public')));
@@ -81,10 +83,14 @@ main.post('/getToken', (request, response) => {
         (loginId === process.env.AUTHORIZED_USER) &&
         (password === process.env.AUTHORIZED_PASSWORD)
     ) {
-        let payload = { loginId: loginId };
+        let payload = {
+            loginId: loginId
+        };
         return response.status(200).json({
             success: true,
-            token: jwt.sign(payload, process.env.PASS_PHRASE, { expiresIn: '24h' }),
+            token: jwt.sign(payload, process.env.PASS_PHRASE, {
+                expiresIn: '24h'
+            }),
             message: 'valid web-token is supplied for 24 hours'
         });
     } else {
@@ -100,7 +106,7 @@ main.post('/getToken', (request, response) => {
 main.get('/CUST', tokenValidate, (request, response) => {
     const queryString = 'SELECT CUS_NO, SNM, SAL FROM DB_U105.dbo.CUST WHERE SAL IN (SELECT SAL_NO AS SAL FROM overdueMonitor.dbo.activeSalesStaff);';
     mssql.connect(mssql_config).then(() => {
-        const request = new mssql.Request();
+        let request = new mssql.Request();
         return request.query(queryString);
     }).then((result) => {
         mssql.close();
@@ -119,11 +125,11 @@ main.get('/CUST', tokenValidate, (request, response) => {
     });
 });
 
-// route to get SUNLIKE DB_U105.dbo.SALM data
+// route to get SUNLIKE DB_U105.dbo.SALM record by id(SAL_NO)
 main.get('/SALM/:SAL_NO', tokenValidate, (request, response) => {
     const queryString = `SELECT a.SAL_NO, a.NAME, b.DEP, b.NAME AS DEP_NAME FROM DB_U105.dbo.SALM a LEFT JOIN DB_U105.dbo.DEPT b ON a.DEP=b.DEP WHERE a.SAL_NO = '${request.params.SAL_NO}';`;
     mssql.connect(mssql_config).then(() => {
-        const request = new mssql.Request();
+        let request = new mssql.Request();
         return request.query(queryString);
     }).then((result) => {
         mssql.close();
@@ -137,9 +143,46 @@ main.get('/SALM/:SAL_NO', tokenValidate, (request, response) => {
         return response.status(500).json({
             success: false,
             data: null,
-            message: `unable to supply customer data: ${error}`
+            message: `unable to supply personnel data: ${error}`
         });
     });
+});
+
+// route to get SUNLIKE DB_U105.dbo.SALM (against an array of SAL_NO from the request body)
+    let personnelList = request.body.personnelList;
+    if (
+        (personnelList.constructor === Array) && // check if it's proper array being passed in
+        (personnelList.length > 0) // check for empty array
+    ) {
+        personnelList.forEach((item, index, list) => {
+            list[index] = `'${item}'`;
+        });
+        let queryString = `SELECT a.SAL_NO, a.NAME, b.DEP, b.NAME AS DEP_NAME FROM DB_U105.dbo.SALM a LEFT JOIN DB_U105.dbo.DEPT b ON a.DEP=b.DEP WHERE a.SAL_NO IN (${personnelList.toString()});`;
+        mssql.connect(mssql_config).then(() => {
+            let request = new mssql.Request();
+            return request.query(queryString);
+        }).then((result) => {
+            mssql.close();
+            return response.status(200).json({
+                success: true,
+                data: result.recordset,
+                message: null
+            });
+        }).catch((error) => {
+            mssql.close();
+            return response.status(500).json({
+                success: false,
+                data: null,
+                message: `unable to supply personnel list: ${error}`
+            });
+        });
+    } else {
+        return response.status(400).json({
+            success: false,
+            data: null,
+            message: 'personnel list is no good'
+        });
+    }
 });
 
 app.listen(process.env.PORT, (error) => {
