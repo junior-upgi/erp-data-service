@@ -1,0 +1,61 @@
+{
+  "name": "erp-data-service",
+  "version": "1.0.0",
+  "description": "node.js backend app that serve live ERP data (prefiltered). with jsonwebtoken validation",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chiayutsaipersonal/erp-data-service.git"
+  },
+  "author": "Chia-Yu Tsai",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chiayutsaipersonal/erp-data-service/issues"
+  },
+  "homepage": "https://github.com/chiayutsaipersonal/erp-data-service#readme",
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "cors": "^2.8.3",
+    "dotenv": "^4.0.0",
+    "express": "^4.15.2",
+    "express-handlebars": "^3.0.0",
+    "jsonwebtoken": "^7.4.0",
+    "mssql": "^4.0.4",
+    "node-cron": "^1.1.3",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-eslint": "^7.2.3",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "cpx": "^1.5.0",
+    "cross-env": "^5.0.0",
+    "eslint": "^3.19.0",
+    "eslint-config-google": "^0.7.1",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-node": "^4.2.2",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "npm-run-all": "^4.0.2",
+    "onchange": "^3.2.1",
+    "rimraf": "^2.6.1"
+  },
+  "scripts": {
+    "template:remove": "rimraf public && mkdir public && cd public && mkdir partials && mkdir layouts",
+    "template:copy": "cpx src/backend/views/*.hbs public && cpx src/backend/views/layouts/*.hbs public/layouts && cpx src/backend/views/partials/*.hbs public/partials",
+    "template:refresh": "run-s template:remove template:copy",
+    "template:watch": "onchange \"src/backend/views/**/*.hbs\" -- npm run \"template:refresh\"",
+    "template:service": "run-s template:refresh template:watch",
+    "server:remove": "rimraf build && mkdir build",
+    "server:lint": "eslint --color --ext .js src/backend",
+    "server:transpile": "babel src/backend -d build",
+    "server:prepare": "run-s server:remove server:lint server:transpile",
+    "server:retranspile": "babel -w src/backend -d build",
+    "server:restart": "cross-env NODE_ENV=development nodemon --watch build --exec \"node build/server.js\"",
+    "server:watch": "run-p server:retranspile server:restart template:service",
+    "start:dev:server": "run-s server:prepare server:watch"
+  }
+}
