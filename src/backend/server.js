@@ -149,6 +149,7 @@ main.get('/SALM/:SAL_NO', tokenValidate, (request, response) => {
 });
 
 // route to get SUNLIKE DB_U105.dbo.SALM (against an array of SAL_NO from the request body)
+main.post('/SALM', tokenValidate, (request, response) => {
     let personnelList = request.body.personnelList;
     if (
         (personnelList.constructor === Array) && // check if it's proper array being passed in
