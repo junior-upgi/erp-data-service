@@ -79,7 +79,7 @@ GET http://upgi.ddns.net:9008/erpDataService/SALM (get staff list against a list
     }
     raw Body
     {
-        "personnelList": "['xxx','xxx','xxx',....]" // 員工編號
+        "personnelList": ["xxx","xxx","xxx",....] // 員工編號
     }
     return type
     {

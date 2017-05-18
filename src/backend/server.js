@@ -32,9 +32,6 @@ main.use(cors()); // allowing cross origin request
 // static file route
 // main.use('/', express.static(path.join(__dirname, '/../public')));
 
-// console.log(process.env.MSSQL_ACCOUNT);
-// console.log(process.env.MSSQL_PASSWORD);
-
 // Handlebars templating engine and set up test route
 app.engine('.hbs', exphbs({
     defaultLayout: 'main',
@@ -167,7 +164,7 @@ main.post('/SALM', tokenValidate, (request, response) => {
             return response.status(200).json({
                 success: true,
                 data: result.recordset,
-                message: null
+                message: `${result.recordset.length} / ${personnelList.length} records retrieved`
             });
         }).catch((error) => {
             mssql.close();
